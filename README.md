@@ -1,6 +1,6 @@
 # regidi
 
-18-bit Readable Gibberish Digests to use when you want
+18-bit or 24-bit Readable Gibberish Digests to use when you want
 a short, memorable representation of a hash function digest, UUID, or similar.
 
 ```python

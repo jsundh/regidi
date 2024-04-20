@@ -1,5 +1,7 @@
+from .substitution import load_substitution_basis
+
 # fmt: off
-lut = [
+base6 = [
     "ba",   "cha",  "do",   "ka",   "ma",   "no",   "si",   "te",
     "be",   "che",  "fa",   "ki",   "me",   "nu",   "so",   "ti",
     "bi",   "chi",  "fi",   "ko",   "mi",   "pa",   "su",   "to",
@@ -9,8 +11,16 @@ lut = [
     "co",   "de",   "go",   "lo",   "ne",   "ro",   "sto",  "tro",
     "cu",   "di",   "gra",  "lu",   "ni",   "sa",   "ta",   "tru"
 ]
+
+aux5 = [
+    "al",   "at",   "el",   "in",   "mac",  "up",   "cov",  "cra",
+    "bu",   "bre",  "cro",  "du",   "fe",   "gu",   "gri",  "gru",
+    "ku",   "pe",   "pu",   "su",   "sla",  "slo",  "spe",  "spi",
+    "spu",  "ste",  "stu",  "tre",  "fu",   "ce",   "ci",   "spy"
+]
 # fmt: on
 
+base6_blocklist, aux5_mapping = load_substitution_basis()
 
 
 def digest18(hash: int | bytes) -> str:
@@ -25,6 +35,12 @@ def digest18(hash: int | bytes) -> str:
         key: int = hash & mask
     else:
         raise TypeError("hash must be bytes or int")
+
+    if base6_blocklist[key]:
+        lut = aux5
+        key = aux5_mapping[key]
+    else:
+        lut = base6
 
     k3 = key & 63
     k2 = (key >> 6) & 63
@@ -51,9 +67,17 @@ def digest24(hash: int | bytes) -> str:
     else:
         raise TypeError("hash must be bytes or int")
 
+    digits = (key >> 18) % 99 + 1
+
+    base6_key = key & 0b111111_111111_111111  # 18 bits
+    if base6_blocklist[base6_key]:
+        lut = aux5
+        key = aux5_mapping[base6_key]
+    else:
+        lut = base6
+
     k3 = key & 63
     k2 = (key >> 6) & 63
     k1 = (key >> 12) & 63
-    digits = (key >> 18) % 99 + 1
 
     return f"{lut[k1]}{lut[k2]}{lut[k3]}{digits:02d}"

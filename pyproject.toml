@@ -1,0 +1,23 @@
+[project]
+name = "regidi"
+version = "0.1.0"
+description = "Readable Gibberish Digests"
+authors = [{ name = "Jakob Sundh", email = "jsundh@users.noreply.github.com" }]
+dependencies = []
+requires-python = ">=3.12"
+readme = "README.md"
+license = { text = "MIT" }
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint.isort]
+known-first-party = ["regidi"]

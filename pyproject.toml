@@ -3,12 +3,13 @@ name = "regidi"
 version = "0.1.0"
 description = "Readable Gibberish Digests"
 authors = [{ name = "Jakob Sundh", email = "jsundh@users.noreply.github.com" }]
-dependencies = [
-    "bitarray>=2.9.2",
-]
+dependencies = ["bitarray>=2.9.2"]
 requires-python = ">=3.12"
 readme = "README.md"
 license = { text = "MIT" }
+
+[project.scripts]
+regidi = "regidi.__main__:main"
 
 [build-system]
 requires = ["pdm-backend"]
@@ -20,10 +21,7 @@ distribution = true
 
 [tool.pdm.dev-dependencies]
 test = ["pytest>=8.1.1"]
-manage = [
-    "tqdm>=4.66.2",
-    "typer>=0.12.3",
-]
+manage = ["tqdm>=4.66.2", "typer>=0.12.3"]
 
 [tool.ruff]
 line-length = 120

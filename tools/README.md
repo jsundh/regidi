@@ -1,6 +1,6 @@
 # Tools
 
-## bad-words.txt
+## [bad-words.txt](./bad-words.txt)
 
 List of terms in English that we want to avoid in the digest output.
 

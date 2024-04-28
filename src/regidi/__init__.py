@@ -35,7 +35,7 @@ lut = [
     # 32 alternative syllables for substitutions
     "al",   "at",   "el",   "in",   "mac",  "up",   "cov",  "cra",
     "bu",   "bre",  "cro",  "du",   "fe",   "gu",   "gri",  "gru",
-    "ku",   "pe",   "pu",   "su",   "sla",  "slo",  "spe",  "spi",
+    "ku",   "pe",   "pu",   "ru",   "sla",  "slo",  "spe",  "spi",
     "spu",  "ste",  "stu",  "tre",  "fu",   "ce",   "ci",   "spy"
 ]
 # fmt: on

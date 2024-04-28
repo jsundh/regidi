@@ -1,5 +1,9 @@
+from typing import Any, Generator, Literal
+
 from . import digest18, lut, substitutions
 from .utils import get_18bit_key, get_21bit_key
+
+reverse_substitutions = {v: k for k, v in substitutions.items()}
 
 
 def reverse_digest18(digest: str) -> int | None:
@@ -12,27 +16,15 @@ def reverse_digest18(digest: str) -> int | None:
     if not (6 <= len(digest) <= 9):
         raise ValueError(f"Expected 6-9 characters, got {len(digest)}")
 
-    if digest[:3] in lut:
-        s1, s2s3 = digest[:3], digest[3:]
-    elif digest[:2] in lut:
-        s1, s2s3 = digest[:2], digest[2:]
-    else:
-        raise ValueError(f"First syllable not found in lookup table: {digest}")
+    for s1_len, s2_len, s3_len in get_possible_syllable_lengths(len(digest)):
+        s1 = digest[:s1_len]
+        s2 = digest[s1_len : s1_len + s2_len]
+        s3 = digest[-s3_len:]
 
-    # A valid second syllable always ends in a vowel
-    if s2s3[1] in "aeiou":
-        s2 = s2s3[:2]
-        s3 = s2s3[2:]
-    elif s2s3[2] in "aeiou":
-        s2 = s2s3[:3]
-        s3 = s2s3[3:]
+        if s1 in lut and s2 in lut and s3 in lut:
+            break
     else:
-        raise ValueError(f"Could not find a valid second syllable in {digest}")
-
-    if s2 not in lut:
-        raise ValueError(f"Second syllable not found in lookup table: {s2}")
-    if s3 not in lut:
-        raise ValueError(f"Third syllable not found in lookup table: {s3}")
+        raise ValueError(f"Could not divide digest into syllables: {digest}")
 
     k1 = lut.index(s1)
     k2 = lut.index(s2)
@@ -45,7 +37,26 @@ def reverse_digest18(digest: str) -> int | None:
         # Alternative syllables used; find reverse mapping from substitution
         lut_key = get_21bit_key(k1, k2, k3)
 
-        return next((basic_key for basic_key, sub_key in substitutions.items() if sub_key == lut_key), None)
+        return reverse_substitutions.get(lut_key, None)
+
+
+def get_possible_syllable_lengths(
+    digest_length: int,
+) -> Generator[tuple[Literal[2, 3], Literal[2, 3], Literal[2, 3]], Any, None]:
+    if digest_length == 9:
+        yield 3, 3, 3
+    elif digest_length == 8:
+        yield 2, 3, 3
+        yield 3, 2, 3
+        yield 3, 3, 2
+    elif digest_length == 7:
+        yield 2, 2, 3
+        yield 2, 3, 2
+        yield 3, 2, 2
+    elif digest_length == 6:
+        yield 2, 2, 2
+    else:
+        raise ValueError(f"Invalid digest length: {digest_length}")
 
 
 if __name__ == "__main__":

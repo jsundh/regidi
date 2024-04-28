@@ -2,7 +2,12 @@ import hashlib
 
 import pytest
 
-from regidi import digest18, digest24
+from regidi import digest18, digest24, lut
+
+
+def test_lut_table():
+    assert len(lut) == 64 + 32
+    assert sorted(lut) == sorted(set(lut))
 
 
 def test_digest18_single():
@@ -11,14 +16,24 @@ def test_digest18_single():
     assert digest == "potato"
 
 
+def test_digest18_unique():
+    n = 2**18
+    digests = set()
+    for i in range(n):
+        digest = digest18(i)
+        digests.add(digest)
+
+    assert len(digests) == n
+
+
 def test_digest18_all():
     h = hashlib.sha256(usedforsecurity=False)
-    for i in range(0, 2**18):
+    for i in range(2**18):
         digest = digest18(i)
         h.update(digest.encode())
 
     # Expected sha256 digest can be regenerated with: regidi --all | tr -d '\n' | sha256sum
-    assert h.hexdigest() == "d41c3a064bf896a7e5667d6d11e14ac5d99f00d5d57810566a95b662e31fd3e5"
+    assert h.hexdigest() == "9deeaa65c6a9b983385c23a2ff6b7b9cecfbcfda39352ade69a368091d1f991f"
 
 
 class TestDigest24:

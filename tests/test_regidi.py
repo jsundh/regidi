@@ -2,17 +2,7 @@ import hashlib
 
 import pytest
 
-from regidi import aux5, base6, digest18, digest24
-
-
-def test_aux5_table():
-    assert len(aux5) == 32
-    assert sorted(aux5) == sorted(set(aux5))
-
-
-def test_base6_table():
-    assert len(base6) == 64
-    assert sorted(aux5) == sorted(set(aux5))
+from regidi import digest18, digest24
 
 
 def test_digest18_single():

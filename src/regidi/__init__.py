@@ -22,7 +22,8 @@ def _load_substitutions() -> dict[int, int]:
 
 
 # fmt: off
-base6 = [
+lut = [
+    # 64 primary syllables
     "ba",   "cha",  "do",   "ka",   "ma",   "no",   "si",   "te",
     "be",   "che",  "fa",   "ki",   "me",   "nu",   "so",   "ti",
     "bi",   "chi",  "fi",   "ko",   "mi",   "pa",   "su",   "to",
@@ -30,10 +31,8 @@ base6 = [
     "bro",  "chu",  "ga",   "le",   "mu",   "ra",   "sta",  "tra",
     "ca",   "da",   "gi",   "li",   "na",   "re",   "sti",  "tri",
     "co",   "de",   "go",   "lo",   "ne",   "ro",   "sto",  "tro",
-    "cu",   "di",   "gra",  "lu",   "ni",   "sa",   "ta",   "tru"
-]
-
-aux5 = [
+    "cu",   "di",   "gra",  "lu",   "ni",   "sa",   "ta",   "tru",
+    # 32 alternative syllables for substitutions
     "al",   "at",   "el",   "in",   "mac",  "up",   "cov",  "cra",
     "bu",   "bre",  "cro",  "du",   "fe",   "gu",   "gri",  "gru",
     "ku",   "pe",   "pu",   "su",   "sla",  "slo",  "spe",  "spi",
@@ -62,14 +61,14 @@ def digest18(hash: int | bytes) -> str:
         raise TypeError("hash must be bytes or int")
 
     if key in substitutions:
-        lut = aux5
         key = substitutions[key]
+        k3 = key & 127
+        k2 = (key >> 7) & 127
+        k1 = (key >> 14) & 127
     else:
-        lut = base6
-
-    k3 = key & 63
-    k2 = (key >> 6) & 63
-    k1 = (key >> 12) & 63
+        k3 = key & 63
+        k2 = (key >> 6) & 63
+        k1 = (key >> 12) & 63
 
     return f"{lut[k1]}{lut[k2]}{lut[k3]}"
 
@@ -95,15 +94,15 @@ def digest24(hash: int | bytes) -> str:
 
     digits = ((key >> 18) & 63) + 1
 
-    base6_key = key & 0b111111_111111_111111  # 18 bits
-    if base6_key in substitutions:
-        lut = aux5
-        key = substitutions[base6_key]
+    lut_key = key & 0b111111_111111_111111  # 18 bits
+    if lut_key in substitutions:
+        key = substitutions[lut_key]
+        k3 = key & 127
+        k2 = (key >> 7) & 127
+        k1 = (key >> 14) & 127
     else:
-        lut = base6
-
-    k3 = key & 63
-    k2 = (key >> 6) & 63
-    k1 = (key >> 12) & 63
+        k3 = key & 63
+        k2 = (key >> 6) & 63
+        k1 = (key >> 12) & 63
 
     return f"{lut[k1]}{lut[k2]}{lut[k3]}{digits:02d}"

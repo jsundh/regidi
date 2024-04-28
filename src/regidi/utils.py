@@ -1,21 +1,26 @@
 import itertools
 from typing import Generator
 
-from . import aux5, base6
+from . import lut
 
 
-def get_key(k1: int, k2: int, k3: int):
+def generate_all_basic() -> Generator[tuple[int, str], None, None]:
+    for k1, k2, k3 in itertools.product(range(64), repeat=3):
+        yield get_18bit_key(k1, k2, k3), f"{lut[k1]}{lut[k2]}{lut[k3]}"
+
+
+def generate_all_substitutions() -> Generator[tuple[int, str], None, None]:
+    # First eight alternative syllables are only intended to be used as the first syllable in the digest
+    r1 = range(64, len(lut))
+    r2 = range(64 + 8, len(lut))
+    r3 = range(64 + 8, len(lut))
+    for k1, k2, k3 in itertools.product(r1, r2, r3):
+        yield get_21bit_key(k1, k2, k3), f"{lut[k1]}{lut[k2]}{lut[k3]}"
+
+
+def get_18bit_key(k1: int, k2: int, k3: int):
     return k1 << 12 | k2 << 6 | k3
 
 
-def generate_all_base6() -> Generator[tuple[int, str], None, None]:
-    for k1, k2, k3 in itertools.product(range(len(base6)), repeat=3):
-        yield get_key(k1, k2, k3), f"{base6[k1]}{base6[k2]}{base6[k3]}"
-
-
-def generate_all_aux5() -> Generator[tuple[int, str], None, None]:
-    # First eight entries in aux5 are only intended to be used as the first syllable in the digest
-    general_start = 8
-    end = len(aux5)
-    for k1, k2, k3 in itertools.product(range(end), range(general_start, end), range(general_start, end)):
-        yield get_key(k1, k2, k3), f"{aux5[k1]}{aux5[k2]}{aux5[k3]}"
+def get_21bit_key(k1: int, k2: int, k3: int):
+    return k1 << 14 | k2 << 7 | k3

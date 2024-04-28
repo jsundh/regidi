@@ -6,15 +6,15 @@ import typer
 from tqdm import tqdm
 
 from regidi import digest18, substitutions_file
-from regidi.utils import generate_all_aux5, generate_all_base6
+from regidi.utils import generate_all_basic, generate_all_substitutions
 
-AUX5_SIZE = 32 * (32 - 8) * (32 - 8)
-BASE6_SIZE = 2**18
+BASIC_SIZE = 2**18
+SUB_SIZE = 32 * (32 - 8) * (32 - 8)
 
 
-class LookupTable(StrEnum):
-    BASE6 = "base6"
-    AUX5 = "aux5"
+class DigestSet(StrEnum):
+    BASIC = "basic"
+    SUB = "sub"
 
 
 app = typer.Typer()
@@ -26,17 +26,17 @@ def load_bad_words() -> list[str]:
 
 
 @app.command()
-def find_bad_words(table: LookupTable):
+def find_bad_words(digest_set: DigestSet):
     """
-    Finds bad words in all possible digests of the given table.
+    Finds bad words in all possible digests of the given set.
     """
-    match table:
-        case LookupTable.BASE6:
-            digests = generate_all_base6()
-            total = BASE6_SIZE
-        case LookupTable.AUX5:
-            digests = generate_all_aux5()
-            total = AUX5_SIZE
+    match digest_set:
+        case DigestSet.BASIC:
+            digests = generate_all_basic()
+            total = BASIC_SIZE
+        case DigestSet.SUB:
+            digests = generate_all_substitutions()
+            total = SUB_SIZE
 
     bad_words = load_bad_words()
 
@@ -61,22 +61,22 @@ def update_substitutions():
     """
     bad_words = load_bad_words()
 
-    def generate_allowed_aux5():
-        for key, digest in tqdm(generate_all_aux5(), total=AUX5_SIZE, desc="aux5", colour="red"):
+    def generate_allowed_substitutions():
+        for key, digest in tqdm(generate_all_substitutions(), total=SUB_SIZE, desc="sub", colour="red"):
             if not any(bad_word in digest for bad_word in bad_words):
                 yield key
 
-    aux_keys = generate_allowed_aux5()
+    substitution_keys = generate_allowed_substitutions()
 
-    base_to_aux = {}
-    for key, digest in tqdm(generate_all_base6(), total=BASE6_SIZE, desc="base6", colour="blue"):
+    basic_to_sub = {}
+    for basic_key, digest in tqdm(generate_all_basic(), total=BASIC_SIZE, desc="basic", colour="blue"):
         if any(bad_word in digest for bad_word in bad_words):
-            aux_key = next(aux_keys)
-            base_to_aux[key] = aux_key
+            sub_key = next(substitution_keys)
+            basic_to_sub[basic_key] = sub_key
 
     with Path(str(substitutions_file)).open("w") as f:
-        for base_key, aux_key in base_to_aux.items():
-            f.write(f"{base_key},{aux_key}\n")
+        for basic_key, sub_key in basic_to_sub.items():
+            f.write(f"{basic_key},{sub_key}\n")
 
 
 @app.command()
@@ -86,7 +86,7 @@ def validate_substitutions():
     """
     bad_words = load_bad_words()
 
-    for i in tqdm(range(BASE6_SIZE)):
+    for i in tqdm(range(BASIC_SIZE)):
         digest = digest18(i)
         for bad_word in bad_words:
             if bad_word in digest:

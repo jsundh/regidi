@@ -1,5 +1,5 @@
-from . import aux5, base6, digest18, substitutions
-from .utils import get_key
+from . import digest18, lut, substitutions
+from .utils import get_18bit_key, get_21bit_key
 
 
 def reverse_digest18(digest: str) -> int | None:
@@ -7,29 +7,17 @@ def reverse_digest18(digest: str) -> int | None:
     Finds the input that generates the given digest18 output - if there is one.
 
     Not all valid digests have a corresponding input;
-    The digests defined by the aux5 table are used to substitute unwanted base6 digests and not all of them are used.
+    The digests with alternative syllables are used to substitute unwanted basic digests and not all of them are used.
     """
     if not (6 <= len(digest) <= 9):
         raise ValueError(f"Expected 6-9 characters, got {len(digest)}")
 
-    if digest[:2] in aux5:
-        lut = aux5
-        lut_name = "aux5"
-        s1, s2s3 = digest[:2], digest[2:]
-    elif digest[:3] in aux5:
-        lut = aux5
-        lut_name = "aux5"
+    if digest[:3] in lut:
         s1, s2s3 = digest[:3], digest[3:]
-    elif digest[:2] in base6:
-        lut = base6
-        lut_name = "base6"
+    elif digest[:2] in lut:
         s1, s2s3 = digest[:2], digest[2:]
-    elif digest[:3] in base6:
-        lut = base6
-        lut_name = "base6"
-        s1, s2s3 = digest[:3], digest[3:]
     else:
-        raise ValueError(f"First syllable not found in either base6 or aux5 lookup tables: {digest}")
+        raise ValueError(f"First syllable not found in lookup table: {digest}")
 
     # A valid second syllable always ends in a vowel
     if s2s3[1] in "aeiou":
@@ -42,21 +30,22 @@ def reverse_digest18(digest: str) -> int | None:
         raise ValueError(f"Could not find a valid second syllable in {digest}")
 
     if s2 not in lut:
-        raise ValueError(f"Second syllable not found in lookup table {lut_name}: {s2}")
+        raise ValueError(f"Second syllable not found in lookup table: {s2}")
     if s3 not in lut:
-        raise ValueError(f"Third syllable not found in lookup table {lut_name}: {s3}")
+        raise ValueError(f"Third syllable not found in lookup table: {s3}")
 
     k1 = lut.index(s1)
     k2 = lut.index(s2)
     k3 = lut.index(s3)
 
-    lut_key = get_key(k1, k2, k3)
+    if k1 < 64 and k2 < 64 and k3 < 64:
+        # Only basic syllables
+        return get_18bit_key(k1, k2, k3)
+    else:
+        # Alternative syllables used; find reverse mapping from substitution
+        lut_key = get_21bit_key(k1, k2, k3)
 
-    if lut is base6:
-        return lut_key
-
-    # Find reverse mapping from aux5 to base6
-    return next((base6_key for base6_key, aux_key in substitutions.items() if aux_key == lut_key), None)
+        return next((basic_key for basic_key, sub_key in substitutions.items() if sub_key == lut_key), None)
 
 
 if __name__ == "__main__":

@@ -18,6 +18,8 @@ class DigestSet(StrEnum):
 
 
 app = typer.Typer()
+sub_app = typer.Typer()
+app.add_typer(sub_app, name="substitutions")
 
 
 def load_bad_words() -> list[str]:
@@ -54,8 +56,8 @@ def find_bad_words(digest_set: DigestSet):
     print(f"Digests that would be excluded: {excludes}/{total} ({excludes / total:.2%})")
 
 
-@app.command()
-def update_substitutions():
+@sub_app.command("update")
+def substitutions_update():
     """
     Updates the substitution resource files based on the current bad-words.txt.
     """
@@ -79,8 +81,8 @@ def update_substitutions():
             f.write(f"{basic_key},{sub_key}\n")
 
 
-@app.command()
-def validate_substitutions():
+@sub_app.command("validate")
+def substitutions_validate():
     """
     Checks that digest18 does not contain any bad words.
     """
@@ -91,7 +93,7 @@ def validate_substitutions():
         for bad_word in bad_words:
             if bad_word in digest:
                 tqdm.write(f"Bad word '{bad_word}' found in {digest}, key={i}")
-                tqdm.write("Run manage.py update-substitutions")
+                tqdm.write("Run manage.py substitutions update")
                 return
 
 

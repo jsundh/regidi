@@ -1,4 +1,4 @@
-from . import aux5, aux5_mapping, base6, digest18
+from . import aux5, base6, digest18, substitutions
 from .utils import get_key
 
 
@@ -56,7 +56,7 @@ def reverse_digest18(digest: str) -> int | None:
         return lut_key
 
     # Find reverse mapping from aux5 to base6
-    return next((base6_key for base6_key, aux_key in aux5_mapping.items() if aux_key == lut_key), None)
+    return next((base6_key for base6_key, aux_key in substitutions.items() if aux_key == lut_key), None)
 
 
 if __name__ == "__main__":

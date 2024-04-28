@@ -1,4 +1,25 @@
-from .substitution import load_substitution_basis
+import warnings
+from importlib.resources import files
+
+substitutions_file = files() / "substitutions.txt"
+
+
+def _load_substitutions() -> dict[int, int]:
+    try:
+        substitutions: dict[int, int] = {}
+        with substitutions_file.open("r") as f:
+            for line in (line.rstrip() for line in f):
+                if not line:
+                    continue
+
+                key, value = line.strip().split(",")
+                substitutions[int(key)] = int(value)
+
+            return substitutions
+    except Exception as e:
+        warnings.warn(f"Failed to load substitutions: {e}. Using no substitutions.")
+        return {}
+
 
 # fmt: off
 base6 = [
@@ -20,7 +41,7 @@ aux5 = [
 ]
 # fmt: on
 
-base6_blocklist, aux5_mapping = load_substitution_basis()
+substitutions = _load_substitutions()
 
 
 def digest18(hash: int | bytes) -> str:
@@ -36,9 +57,9 @@ def digest18(hash: int | bytes) -> str:
     else:
         raise TypeError("hash must be bytes or int")
 
-    if base6_blocklist[key]:
+    if key in substitutions:
         lut = aux5
-        key = aux5_mapping[key]
+        key = substitutions[key]
     else:
         lut = base6
 
@@ -70,9 +91,9 @@ def digest24(hash: int | bytes) -> str:
     digits = (key >> 18) % 99 + 1
 
     base6_key = key & 0b111111_111111_111111  # 18 bits
-    if base6_blocklist[base6_key]:
+    if base6_key in substitutions:
         lut = aux5
-        key = aux5_mapping[base6_key]
+        key = substitutions[base6_key]
     else:
         lut = base6
 

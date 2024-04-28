@@ -3,7 +3,7 @@ name = "regidi"
 version = "0.1.0"
 description = "Readable Gibberish Digests"
 authors = [{ name = "Jakob Sundh", email = "jsundh@users.noreply.github.com" }]
-dependencies = ["bitarray>=2.9.2"]
+dependencies = []
 requires-python = ">=3.12"
 readme = "README.md"
 license = { text = "MIT" }

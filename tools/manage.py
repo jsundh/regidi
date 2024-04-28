@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
-import csv
 from enum import StrEnum
 from pathlib import Path
 
 import typer
-from bitarray import bitarray
 from tqdm import tqdm
 
-from regidi import digest18
-from regidi.substitution import CsvDialect, aux5_mapping_path, base6_blocklist_path
+from regidi import digest18, substitutions_file
 from regidi.utils import generate_all_aux5, generate_all_base6
 
 AUX5_SIZE = 32 * (32 - 8) * (32 - 8)
@@ -58,7 +55,7 @@ def find_bad_words(table: LookupTable):
 
 
 @app.command()
-def update_substitution_data():
+def update_substitutions():
     """
     Updates the substitution resource files based on the current bad-words.txt.
     """
@@ -71,25 +68,19 @@ def update_substitution_data():
 
     aux_keys = generate_allowed_aux5()
 
-    excluded = bitarray(BASE6_SIZE)
     base_to_aux = {}
     for key, digest in tqdm(generate_all_base6(), total=BASE6_SIZE, desc="base6", colour="blue"):
         if any(bad_word in digest for bad_word in bad_words):
-            excluded[key] = True
             aux_key = next(aux_keys)
             base_to_aux[key] = aux_key
 
-    with Path(str(base6_blocklist_path)).open("wb") as f:
-        excluded.tofile(f)
-
-    with Path(str(aux5_mapping_path)).open("w") as f:
-        writer = csv.writer(f, dialect=CsvDialect)
+    with Path(str(substitutions_file)).open("w") as f:
         for base_key, aux_key in base_to_aux.items():
-            writer.writerow((base_key, aux_key))
+            f.write(f"{base_key},{aux_key}\n")
 
 
 @app.command()
-def validate_substitution():
+def validate_substitutions():
     """
     Checks that digest18 does not contain any bad words.
     """
@@ -100,7 +91,7 @@ def validate_substitution():
         for bad_word in bad_words:
             if bad_word in digest:
                 tqdm.write(f"Bad word '{bad_word}' found in {digest}, key={i}")
-                tqdm.write("Run manage.py update-substitution-data")
+                tqdm.write("Run manage.py update-substitutions")
                 return
 
 

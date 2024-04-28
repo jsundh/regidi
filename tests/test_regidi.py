@@ -20,7 +20,7 @@ def test_digest18():
 
 
 class TestDigest24:
-    @pytest.mark.parametrize(["test_input", "expected_digits"], [(i << 18, f"{(i+1):02d}") for i in range(0, 99)])
+    @pytest.mark.parametrize(["test_input", "expected_digits"], [(i << 18, f"{(i+1):02d}") for i in range(0, 64)])
     def test_digits(self, test_input, expected_digits):
         digest = digest24(test_input)  # type: ignore
 

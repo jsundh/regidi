@@ -41,7 +41,7 @@ Constructs the digest using the lowest 18 bits in the input.
 
 ### digest24
 
-24.63-bit digest with the same three syllables as `digest18` together with two digits at the end, 01-99 (~6.63 bits).
+24-bit digest with the same three syllables as `digest18` together with two digits at the end, 01-64.
 
 ```python
 import mmh3

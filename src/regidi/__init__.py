@@ -46,7 +46,11 @@ substitutions = _load_substitutions()
 
 def digest18(hash: int | bytes) -> str:
     """
-    Generates a three-syllable digest using the first (lowest) 18 bits of the given hash.
+    Generates an 18-bit digest consisting of three syllables.
+
+    Uses the lowest 18 bits of the given input, where each syllable is based on 6 bits.
+
+    Example: `potato`
     """
     mask = 0b111111_111111_111111  # 18 bits
 
@@ -72,14 +76,15 @@ def digest18(hash: int | bytes) -> str:
 
 def digest24(hash: int | bytes) -> str:
     """
-    Generates a ~24.63-bit digest using the first 25 bits of the given hash.
+    Generates a 24-bit digest consisting of three syllables and two digits.
 
-    The digest consists of the same three syllables as digest18 from the first 18 bits together
-    with two digits in the range 01-99 appended to the end, extracted from the remaining 7 bits.
+    Uses the lowest 24 bits of the given input.
+    The syllables are generated from the lowest 18 bits in the exact same way as the digest18 function.
+    The two digits are appended to the end based on the remaining 6 bits, in the range 01-64.
 
     Example: `potato38`
     """
-    mask = 0b1111111_111111_111111_111111  # 25 bits
+    mask = 0b111111_111111_111111_111111  # 24 bits
 
     if isinstance(hash, bytes):
         key: int = int.from_bytes(hash, "big") & mask
@@ -88,7 +93,7 @@ def digest24(hash: int | bytes) -> str:
     else:
         raise TypeError("hash must be bytes or int")
 
-    digits = (key >> 18) % 99 + 1
+    digits = ((key >> 18) & 63) + 1
 
     base6_key = key & 0b111111_111111_111111  # 18 bits
     if base6_key in substitutions:

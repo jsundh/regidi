@@ -1,7 +1,7 @@
 """
-Print regidi digests for the given hex strings.
+Print regidi digests for the given hex string or integer (base 10) inputs.
 
-If no hex strings are provided as arguments, read from stdin.
+If no inputs are provided as arguments, read from stdin.
 """
 
 import argparse
@@ -17,18 +17,20 @@ def main():
     }
 
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("-f", "--format", choices=["int", "hex"], default="hex", help="Input format")
     parser.add_argument(
         "-l", "--length", type=int, choices=[18, 24], default=18, help="Regidi digest length to generate"
     )
-    parser.add_argument("hash", nargs="*", help="Hex strings to digest")
+    parser.add_argument("input", nargs="*", help="Inputs to digest")
     args = parser.parse_args()
 
-    input_src = args.hash or sys.stdin
+    input_src = args.input or sys.stdin
     digest_fn = digests[args.length]
 
     for line in input_src:
-        h = int(line.strip(), 16)
-        print(digest_fn(h))
+        base = 16 if args.format == "hex" else 10
+        key = int(line.strip(), base)
+        print(digest_fn(key))
 
 
 if __name__ == "__main__":
